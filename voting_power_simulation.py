@@ -1,7 +1,6 @@
 # TODO:
 # add options for reapportionment and for DC + Puerto rico statehood
 
-# imports
 import math
 import openpyxl
 import pandas as pd
@@ -18,7 +17,7 @@ input_file_name = 'states.xlsx'
 output_file_name = 'simulation_output.xlsx'
 
 def main():
-    if (len(sys.argv) > 1 and (sys.argv[1] == "banzhaf" or sys.argv[1] == "ss")):
+    if (len(sys.argv) > 1 and sys.argv[1] in ["banzhaf", "ss"]):
         df = pd.read_excel(input_file_name)
         df = df.set_index('State')
         if (len(sys.argv) > 2 and sys.argv[2].isnumeric()):
@@ -31,8 +30,8 @@ def main():
             print('running Shapley-Shubik Power Index simulation for {} runs...'.format(num_runs))
             state_to_num_tallies, wins = ss_power_index(df)
     else:
-        print("Please pass \'banzhaf\' or \'ss\' as the first argument")
-        print('Second number is optional number of runs (default {})'.format(num_runs))
+        print("please pass \'banzhaf\' or \'ss\' as the first argument")
+        print('second argument is optionally the number of runs (default {})'.format(num_runs))
         return
     print("saving...")
     calculate_and_print(df, state_to_num_tallies, wins, sys.argv[1])
@@ -51,6 +50,7 @@ def ss_power_index(df):
     num_blue_wins = 0
     num_ties = 0
 
+    # run the simulations
     for i in range(num_runs):
         state_ordering = states
         random.shuffle(state_ordering)
@@ -92,7 +92,7 @@ def bh_power_index(df):
     num_blue_wins = 0
     num_ties = 0
 
-    # run the simulation
+    # run the simulations
     for i in range(num_runs):
         red_states = list()
         blue_states = list()
