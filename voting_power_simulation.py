@@ -11,6 +11,8 @@ import sys
 # probability_column = 'Economist_prob_red'
 # probability_column = '538_prob_red'
 probability_column = 'Equal'
+# EV_column = 'EV'
+EV_column = 'EV_2024'
 num_runs = 10000
 sig_figs = 2
 input_file_name = 'states.xlsx'
@@ -39,7 +41,7 @@ def main():
 
 def ss_power_index(df):
     # import individual state probabilities
-    sum_votes = sum(df['EV'])
+    sum_votes = sum(df[EV_column])
     win_number = int(math.ceil(sum_votes/2.0))
 
     state_to_num_tallies = dict()
@@ -60,9 +62,9 @@ def ss_power_index(df):
         for state in state_ordering:
             row = df.loc[state]
             if random.random() < row[probability_column]:
-                red_state_total += row['EV']
+                red_state_total += row[EV_column]
             else:
-                blue_state_total += row['EV']
+                blue_state_total += row[EV_column]
             if (red_state_total >= win_number):
                 state_to_num_tallies[state] += 1
                 num_red_wins += 1
@@ -82,7 +84,7 @@ def bh_power_index(df):
     df = pd.read_excel (input_file_name)
     df = df.set_index('State')
 
-    sum_votes = sum(df['EV'])
+    sum_votes = sum(df[EV_column])
     win_number = int(math.ceil(sum_votes/2.0))
 
     state_to_num_tallies = dict()
@@ -101,10 +103,10 @@ def bh_power_index(df):
         for _index, row in df.iterrows():
             if random.random() < row[probability_column]:
                 red_states.append(row.name)
-                red_state_total += row['EV']
+                red_state_total += row[EV_column]
             else:
                 blue_states.append(row.name)
-                blue_state_total += row['EV']
+                blue_state_total += row[EV_column]
         if red_state_total > win_number:
             winning_coalition = red_states
             winning_total = red_state_total
@@ -118,7 +120,7 @@ def bh_power_index(df):
             winning_total = 269
             num_ties += 1
         for state in winning_coalition:
-            if winning_total - df.loc[state, 'EV'] < win_number:
+            if winning_total - df.loc[state, EV_column] < win_number:
                 state_to_num_tallies[state] += 1
 
     return state_to_num_tallies, [num_red_wins, num_blue_wins, num_ties]
