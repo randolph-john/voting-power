@@ -19,22 +19,23 @@ rownames(states) <- states$State
 
 # shapley-shubik function
 for (i in 1:num_runs) {
+  states_copy = states
   print(paste("iteration ", i))
   state_ordering <- sample(competitive_states)
   for (state in state_ordering) {
-    red_states <- states$State[states$Economist_prob_red == 1.00]
-    blue_states <- states$State[states$Economist_prob_red == 0.00]
+    red_states <- states_copy$State[states_copy$Economist_prob_red == 1.00]
+    blue_states <- states_copy$State[states_copy$Economist_prob_red == 0.00]
     new_prob <- update_prob(clinton_states = blue_states, trump_states = red_states, show_all_states = TRUE)
     prob_clinton = new_prob[state]
     flip = runif(n=1,min=0,max=1)
     if (flip > prob_clinton) {
-      states[state, "Economist_prob_red"] = 1.00
+      states_copy[state, "Economist_prob_red"] = 1.00
     } else {
-      states[state, "Economist_prob_red"] = 0.00
+      states_copy[state, "Economist_prob_red"] = 0.00
     }
     
-    red_total <- sum(states$EV[states$Economist_prob_red == 1.00])
-    blue_total <- sum(states$EV[states$Economist_prob_red == 0.00])
+    red_total <- sum(states_copy$EV[states_copy$Economist_prob_red == 1.00])
+    blue_total <- sum(states_copy$EV[states_copy$Economist_prob_red == 0.00])
     print(red_total)
     print(blue_total)
     

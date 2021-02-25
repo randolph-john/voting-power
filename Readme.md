@@ -7,18 +7,44 @@ voting power per person using probabilities from The Economist, 538, and equal
 Power Index.
 
 See [this overleaf document](https://www.overleaf.com/project/5f8117bb557f6100010866bc)
-for more in-depth description and other general notes.
+more in-depth description and other general notes.
 
 ## File tree
 ```
 project
+|   BanzhafCalc.py - calculates BH PI
+|   BaselineCalc.py - calculates demographic-based power baseline
 │   README.md - this readme
-│   simulation_output.xlsx - output of simulation run by voting_power_simulation.py
-│   states.xlsx - contains data on each state
-|   voting_power_simulation.py - python script that updates simulation_output.xlsx
+├── Correlation Matrix - looking at adjusting the way the Economist's model correlates states
+│   ├── generate_correlation_matrix.R - generates correlation matrix between states
+│   ├── various_correlations_output.xlsx - output of different runs with different correlation matrices
+│   ├── Kremp_SS_simulation.R - runs simulation using correlation matrix
+│   └── data
+│       ├── states_past_voting_after_flip.csv/xlsx - how states have voted since 1992
+│       ├── states_past_voting.csv/xlsx - how states have voted since 1964
+│       └── states.csv/xlsx - basic info about states
+├── Simulator - looking at simulating BH/SS index based on likelihood of states to flip in 2020 election
+│   ├── voting_power_simulation.py - run simulation
+│   └── simulation_output.xlsx - output of simulation
+├── data
+│   ├── acs_2013_variables.csv - demographic info from the Economist
+│   ├── BHweights.csv - BH weights of states
+│   ├── SSweights.csv - SS weights of states
+│   └── states.csv - basic info about states
 ```
 
-## Running the script
+## BaselineCalc
+
+Run `BaselineCalc` to output the baseline of voter power of different demographics using three methods: only looking at the electorate, using the BH index, and using the SS index. More info on that and results can be found in the [overleaf document](https://www.overleaf.com/project/5f8117bb557f6100010866bc) in `Baseline.tex`.
+
+
+## Correlation Matrix
+
+Run the script `generate_correlation_matrix` to generate the correlation matrix between the states. Then run `Kremp_SS_simulation.R` to see the output of a run with that correlation matrix.
+
+The results of runs with several different correlation matrices are in `various_correlations_output.xlsx`.
+
+## Simulator
 Run the script `voting_power_simulation.py` directly.
 
 The first argument should be either `banzhaf` or `ss`, which will determine
