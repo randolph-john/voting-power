@@ -26,11 +26,11 @@ project
 ├── Simulator - looking at simulating BH/SS index based on likelihood of states to flip in 2020 election
 │   ├── voting_power_simulation.py - run simulation
 │   └── simulation_output.xlsx - output of simulation
-├── data
-│   ├── acs_2013_variables.csv - demographic info from the Economist
-│   ├── BHweights.csv - BH weights of states
-│   ├── SSweights.csv - SS weights of states
-│   └── states.csv - basic info about states
+└── data
+    ├── acs_2013_variables.csv - demographic info from the Economist
+    ├── BHweights.csv - BH weights of states
+    ├── SSweights.csv - SS weights of states
+    └── states.csv - basic info about states
 ```
 
 ## BaselineCalc
