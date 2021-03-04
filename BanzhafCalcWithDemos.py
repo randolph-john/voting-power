@@ -62,7 +62,7 @@ states = {
     "WY": (3, 578759),
 }
 
-num_simulations = 500
+num_simulations = 500000
 
 def permutations():
     states_counter = states.copy()
@@ -111,7 +111,7 @@ def simulations():
 
     nec_votes = math.ceil((float(tot_votes))/2.0)
     for i in range(num_simulations):
-a        yes_voters = []
+        yes_voters = []
         no_voters = []
         votes = 0
         for key in states.keys():
@@ -121,6 +121,9 @@ a        yes_voters = []
                 yes_voters.append(key)
             else:
                 no_voters.append(key)
+        # print("yes voters are ")
+        # print(yes_voters)
+        # print("votes are " + str(votes))
         if votes >= nec_votes:
             for v in yes_voters:
                 if votes - states[v][0] < nec_votes:
@@ -140,71 +143,9 @@ a        yes_voters = []
     )
     print(df)
     df.to_csv('data/BHweights.csv', index=False)
-
-def simulations_with_demos():
-    # import demographics
-    demo_df = pd.read_csv(r'data/acs_2013_variables.csv')
-    demo_df = demo_df.set_index('state')
-    col_names = ['white_pct', 'black_pct', 'hisp_other_pct']
-
-    # new dictionary, set values to 0
-    blocks_counter = {}
-    for key in states.keys():
-        blocks_counter[key + 'white_pct'] = 0
-        blocks_counter[key + 'black_pct'] = 0
-        blocks_counter[key + 'hisp_other_pct'] = 0
-
-    tot_votes = 0
-    for key in states.keys():
-        tot_votes = tot_votes + states[key][0]
-
-    nec_votes = math.ceil((float(tot_votes))/2.0)
-    for i in range(num_simulations):
-        yes_voters = []
-        yes_block_voters = []
-        no_voters = []
-        no_block_voters = []
-        votes = 0
-        for key in states.keys():
-            total_yes = 0.0
-            # flip for all voting blocks in the state
-            for block in ['white_pct', 'black_pct', 'hisp_other_pct']:
-                if random.random() < .5:
-                    total_yes += demo_df.loc[key].at[block]
-                    yes_block_voters.append(key + block)
-                else:
-                    no_block_voters.append(key + block)
-            # if the sum of demos voting yes is majority (i.e. if state votes yes)
-            if total_yes > .5:
-                votes = votes + states[key][0]
-                yes_voters.append((key, total_yes))
-            else:
-                no_voters.append((key, 1-total_yes))
-        if votes >= nec_votes:
-            winning_coalition = yes_voters
-            winning_block_coalition = yes_block_voters
-        else:
-            winning_coalition = no_voters
-            winning_block_coalition = no_block_voters
-        for v, pct in winning_coalition:
-            if votes - states[v][0] < nec_votes:
-                # it is critical yes_voter, check the blocks
-                for block in ['white_pct', 'black_pct', 'hisp_other_pct']:
-                    # if block voted the way of the state and was critical
-                    if v + block in winning_block_coalition and pct - demo_df.loc[v].at[block] < .5:
-                        blocks_counter[v + block] = blocks_counter[v + block] + 1
-    tot_important = sum(blocks_counter.values())
-    for key in blocks_counter.keys():
-        blocks_counter[key] = blocks_counter[key]/tot_important
-
-    df = pd.DataFrame(
-        [{"state": index, "weight": value} for index, value in blocks_counter.items()]
-    )
-    print(df)
-    df.to_csv('data/BHweightsWithDemos.csv', index=False)
+    # divide and print for real value
 
 
 if __name__ == '__main__':
     # permutations()
-    # simulations()
-    simulations_with_demos()
+    simulations()
