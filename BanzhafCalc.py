@@ -62,7 +62,7 @@ states = {
     "WY": (3, 578759),
 }
 
-num_simulations = 500
+num_simulations = 2000
 
 def permutations():
     states_counter = states.copy()
@@ -111,7 +111,7 @@ def simulations():
 
     nec_votes = math.ceil((float(tot_votes))/2.0)
     for i in range(num_simulations):
-a        yes_voters = []
+        yes_voters = []
         no_voters = []
         votes = 0
         for key in states.keys():
@@ -139,9 +139,9 @@ a        yes_voters = []
         [{"state": index, "weight": value} for index, value in states_counter.items()]
     )
     print(df)
-    df.to_csv('data/BHweights.csv', index=False)
+    df.to_csv('output/BHweights.csv', index=False)
 
-def simulations_with_demos():
+def simulations_with_race():
     # import demographics
     demo_df = pd.read_csv(r'data/acs_2013_variables.csv')
     demo_df = demo_df.set_index('state')
@@ -201,10 +201,105 @@ def simulations_with_demos():
         [{"state": index, "weight": value} for index, value in blocks_counter.items()]
     )
     print(df)
-    df.to_csv('data/BHweightsWithDemos.csv', index=False)
+    df.to_csv('output/BHweightsWithRace.csv', index=False)
+
+
+def simulations_with_race_age_sex():
+    # import demographics
+    demo_df = pd.read_csv(r'data/kff_all.csv')
+    demo_df = demo_df.set_index('state')
+    races = [
+        "White",
+        "Black",
+        "Hispanic",
+        "Asian",
+        "American Indian/Alaska Native",
+        "Native Hawaiian/Other Pacific Islander",
+        "Multiple Races",
+    ]
+    ages = [
+        "Adults 19-25",
+        "Adults 26-34",
+        "Adults 35-54",
+        "Adults 55-64",
+        "65+",
+    ]
+    sexes = ["Male", "Female"]
+
+    # new dictionary, set values to 0
+    blocks_counter = {}
+    for key in states.keys():
+        for race in races:
+            for age in ages:
+                for sex in sexes:
+                    blocks_counter[key + race + age + sex] = 0
+
+    tot_votes = 0
+    for key in states.keys():
+        tot_votes = tot_votes + states[key][0]
+
+    nec_votes = math.ceil((float(tot_votes))/2.0)
+    for i in range(num_simulations):
+        yes_voters = []
+        yes_block_voters = []
+        no_voters = []
+        no_block_voters = []
+        votes = 0
+        for key in states.keys():
+            total_yes = 0.0
+            # flip for all voting blocks in the state
+            for race in races:
+                for age in ages:
+                    for sex in sexes:
+                        if random.random() < .5:
+                            vote_share = demo_df.loc[key].at[race]*demo_df.loc[key].at[age]*demo_df.loc[key].at[sex]
+                            total_yes += vote_share
+                            yes_block_voters.append(key + race + age + sex)
+                        else:
+                            no_block_voters.append(key + race + age + sex)
+            # if the sum of demos voting yes is majority (i.e. if state votes yes)
+            if total_yes > .5:
+                votes = votes + states[key][0]
+                yes_voters.append((key, total_yes))
+            else:
+                no_voters.append((key, 1-total_yes))
+        if votes >= nec_votes:
+            winning_coalition = yes_voters
+            winning_block_coalition = yes_block_voters
+        else:
+            winning_coalition = no_voters
+            winning_block_coalition = no_block_voters
+        for v, pct in winning_coalition:
+            if votes - states[v][0] < nec_votes:
+                # it is critical yes_voter, check the blocks
+                for race in races:
+                    for age in ages:
+                        for sex in sexes:
+                            # if block voted the way of the state and was critical
+                            if (v + race + age + sex) in winning_block_coalition:
+                                vote_share = demo_df.loc[key].at[race]*demo_df.loc[key].at[age]*demo_df.loc[key].at[sex]
+                                if pct - vote_share < .5:
+                                    blocks_counter[v + race + age + sex] = blocks_counter[v + race + age + sex] + 1
+    tot_important = sum(blocks_counter.values())
+    for key in blocks_counter.keys():
+        blocks_counter[key] = blocks_counter[key]/tot_important
+
+    df = pd.DataFrame(
+        [{"state": index, "weight": value} for index, value in blocks_counter.items()]
+    )
+    by_pop = []
+    for state in states.keys():
+        for race in races:
+            for age in ages:
+                for sex in sexes:
+                    pop = demo_df.loc[state].at[race]*demo_df.loc[state].at[age]*demo_df.loc[state].at[sex]*states[state][1]
+                    by_pop.append(blocks_counter[state + race + age + sex]/pop*210000000)
+    df["per person"] = by_pop
+    print(df)
+    df.to_csv('output/BHweightsWithRaceAgeSex.csv', index=False)
 
 
 if __name__ == '__main__':
     # permutations()
     # simulations()
-    simulations_with_demos()
+    simulations_with_race_age_sex()
